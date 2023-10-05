@@ -1,14 +1,17 @@
+// FOR THE RECORD I CANNOT STAND THIS JAVASCRIPT LANGUAGE AND HAD TO COMMENT DANG NEAR EVERY LINE TO MAKE SURE I WAS NOT MUCKING SOMETHING UP.
+
+
+// Start by constructing the dropdown menu and populating with subject ids
+
 //  Datasource!
 var source = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
 
-// Chart building funtime, all at once!
-function buildCharts(sampleId) {
-    // Gather data for chart sonstruction...
+
+function initialize() {
     d3.json(source).then(data => {
-        console.log("Fetched Data:", data);
-        // Filter data based on the selected sampleId
-        /*
-        Format of data...
+        console.log("Dataset for viewing in log...", data);
+/*
+    'data'' format as follows...
         metadata: Array
             Object
                 age: 24
@@ -27,7 +30,41 @@ function buildCharts(sampleId) {
                 otu_ids: [1167, 2859, 482, 2264, 41, 1189, 352, 189, 2318, 1977, …]
                 otu_labels: ["Bacteria;Bacteroidetes;Bacteroidia;Bacteroidales;Porphyromonadaceae;Porphyromonas"...]
                 sample_values: 163
+*/
+
+        var sampleIds = data.names; // Creates a variable with the values from the 'names' array in it, the IDs to select from
+        var dropdownMenu = d3.select("#selDataset"); // Target the <select> tag with id = selDataset
+        sampleIds.forEach(sampleId => {
+            dropdownMenu.append("option").property("value", sampleId).text(sampleId);
+        }); // Loop through the full array of sampleIds and append each to the target of that particular select statement id
+            // The 'names' array is 1d in nature so a column discriminator is not necessary, wee.
+        
+        /* It should result in a series of html-format statements that will comprise the dropdown menu values like this...
+        <select id="selDataset" onchange="optionChanged(this.value)">
+            <option value="1">Sample name 1</option>
+            <option value="2">Sample name 2</option>
+            <option value="3">Sample name 3</option>
+            ...
+        </select>
         */
+
+        // Construct with the first value in the resulting sample data 1d array
+        var initialSampleId = sampleIds[0];
+        buildCharts(initialSampleId);
+        buildMetadata(initialSampleId);
+        
+    });
+}
+// Gotta initialize it somewhere
+
+
+// Filter data based on the selected sampleId
+
+// Chart building funtime, all at once!
+function buildCharts(sampleId) {
+    // Gather data for chart sonstruction...
+    d3.json(source).then(data => {
+        
        //  Why not at the beginning with id:0, gotta start somewhere~
         var sampleData = data.samples.filter(sample => sample.id === sampleId)[0];
         //Making a bar chart
@@ -59,7 +96,7 @@ function buildCharts(sampleId) {
         var dialData = [
             {
                 type: "indicator",
-                mode: "gauge+number",
+                mode: "gauge",
                 value: weeklyScrubs,
                 title: {
                     text: "<b>Belly Button Washing Frequency</b><br><span style='font-size:0.8em;color:gray'>Scrubs per Week</span>",
@@ -68,7 +105,6 @@ function buildCharts(sampleId) {
                 gauge: {
                     axis: { range: [null, 9], tickvals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], ticktext: ["0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8", "8-9", ""],
                             tickmode: "array", tickangle: 45 },
-                    bar: { color: "darkblue" },
                     bgcolor: "white",
                     borderwidth: 2,
                     bordercolor: "gray",
@@ -83,13 +119,16 @@ function buildCharts(sampleId) {
                         { range: [7, 8], color: "rgba(78, 157, 143, 0.7)" },
                         { range: [8, 9], color: "rgba(34, 139, 34, 0.7)" } // Forest Green
                     ],
+                    threshold: {
+                        line: { color: "red", width: 4 },
+                        thickness: 0.75,
+                        value: weeklyScrubs
+                    },
+                    shape: "needle",
                     needle: {
-                        show: true,
                         thickness: 0.5,
-                        value: weeklyScrubs,
-                        reference: { show: false },
-                        relative: false,
-                        type: "path"
+                        length: 50,
+                        value: weeklyScrubs
                     }
                 }
             }
@@ -99,7 +138,13 @@ function buildCharts(sampleId) {
             width: 400,
             height: 400,
             margin: { t: 25, r: 25, l: 25, b: 25 },
-            font: { color: "black", family: "Arial" }
+            font: { color: "black", family: "Arial" },
+            annotations: [
+                {
+                    showarrow: true,
+                    arrowhead: 50
+                }
+              ]
         };
 
         Plotly.newPlot("gauge", dialData, dialLayout);
@@ -135,24 +180,6 @@ function optionChanged(newSampleId) {
     buildMetadata(newSampleId);
 }
 
-// Function to create the initial layout and charts
-function init() {
-    // Fetch data and populate dropdown menu
-    d3.json(source).then(data => {
-        var sampleIds = data.names;
 
-        // Populate the dropdown menu with sample IDs
-        var dropdownMenu = d3.select("#selDataset");
-        sampleIds.forEach(sampleId => {
-            dropdownMenu.append("option").property("value", sampleId).text(sampleId);
-        });
 
-        // Initialize charts and metadata with the first sample ID
-        var initialSampleId = sampleIds[0];
-        buildCharts(initialSampleId);
-        buildMetadata(initialSampleId);
-    });
-}
-
-// Gotta initialize it somewhere
-init();
+initialize();
