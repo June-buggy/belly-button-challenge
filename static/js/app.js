@@ -11,7 +11,7 @@ function initialize() {
     d3.json(source).then(data => {
         console.log("Dataset for viewing in log...", data);
 /*
-    'data'' format as follows...
+    'data' format as follows...
         metadata: Array
             Object
                 age: 24
@@ -33,11 +33,11 @@ function initialize() {
 */
 
         var sampleIds = data.names; // Creates a variable with the values from the 'names' array in it, the IDs to select from
-        var dropdownMenu = d3.select("#selDataset"); // Target the <select> tag with id = selDataset
+        var dropdownMenu = d3.select("#selDataset"); // Target the section of HTML code wit a <select> tag id = selDataset
         sampleIds.forEach(sampleId => {
             dropdownMenu.append("option").property("value", sampleId).text(sampleId);
         }); // Loop through the full array of sampleIds and append each to the target of that particular select statement id
-            // The 'names' array is 1d in nature so a column discriminator is not necessary, wee.
+            // The 'names' array is 1D in nature so a column discriminator is not necessary, wee.
         
         /* It should result in a series of html-format statements that will comprise the dropdown menu values like this...
         <select id="selDataset" onchange="optionChanged(this.value)">
@@ -48,17 +48,13 @@ function initialize() {
         </select>
         */
 
-        // Construct with the first value in the resulting sample data 1d array
-        var initialSampleId = sampleIds[0];
+        var initialSampleId = sampleIds[0]; // Build charts and such with the first value in the resulting 1D sample data array
         buildCharts(initialSampleId);
         buildMetadata(initialSampleId);
-        
+        // Calls on the charts and medatdata constructos functions! \o/... defined below, obv.
     });
 }
-// Gotta initialize it somewhere
 
-
-// Filter data based on the selected sampleId
 
 // Chart building funtime, all at once!
 function buildCharts(sampleId) {
@@ -173,7 +169,9 @@ function buildMetadata(sampleId) {
         });
     });
 }
-// Function to update all plots and metadata when a new sample is selected
+// The 'optionChanged' function is called via the <select id="selDataset" onchange="optionChanged(this.value)"></select> line in the HTML code
+// It triggers at the 'onchange' event of the dropdown menu selection modification, then rebuilds the charts and such with the new selection
+
 function optionChanged(newSampleId) {
     // Update charts and metadata based on the selected sample ID
     buildCharts(newSampleId);
